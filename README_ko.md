@@ -2,7 +2,7 @@
 
 > 여러 대의 FortiGate 방화벽 설정 파일(`.conf`) 또는 멀티 vDOM 환경 간의 **주소(Address) 및 서비스(Service) 객체**를 비교·분석하고, 충돌하는 속성을 손쉽게 일원화하여 **FortiOS 표준 동기화 CLI 스크립트**를 자동 생성하는 도구입니다.
 
-<img width="1582" height="1028" alt="image" src="https://github.com/user-attachments/assets/c4a9dcad-5ce4-4360-ba45-32cd2b52cf58" />
+<img width="1582" height="1028" alt="image" src="https://github.com/user-attachments/assets/9dde6e6b-7408-4a89-8cf0-e4c93eb6d782" />
 
 <img width="1582" height="1009" alt="image" src="https://github.com/user-attachments/assets/7562ed54-fb36-4b2c-b50f-1065c9dfa556" />
 
