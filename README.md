@@ -1,8 +1,8 @@
 # FortiGate Object Sync
 
-> A high-performance desktop tool and synchronization engine to compare, reconcile, and synchronize **Address and Service Objects** across multiple FortiGate configuration files and multi-VDOM environments, generating production-ready **FortiOS CLI synchronization scripts**.
+> A specialized tool to compare and analyze **Address and Service objects** across multiple FortiGate firewall configuration files (`.conf`) or multi-vDOM environments, easily unify conflicting attributes, and automatically generate **standard FortiOS synchronization CLI commands**.
 
-<img width="1582" height="1028" alt="image" src="https://github.com/user-attachments/assets/c4a9dcad-5ce4-4360-ba45-32cd2b52cf58" />
+<img width="1582" height="1028" alt="image" src="https://github.com/user-attachments/assets/9dde6e6b-7408-4a89-8cf0-e4c93eb6d782" />
 
 <img width="1582" height="1009" alt="image" src="https://github.com/user-attachments/assets/7562ed54-fb36-4b2c-b50f-1065c9dfa556" />
 
@@ -12,52 +12,51 @@
 
 ## 📌 Key Features
 
-* **Full Multi-File & Multi-VDOM Support**
-  * Automatically detects single-VDOM (`root`) and multi-VDOM (`config vdom`) configurations.
-  * Cross-analyzes objects across different config files and VDOMs, immediately pinpointing conflicting definitions (IP subnets, FQDNs, comments, group members, etc.).
+* **Full Support for Multi-File & Multi-vDOM**
+  * Automatically detects and parses single-vDOM (`root`) and multi-vDOM (`config vdom`) structures.
+  * Instantly identifies conflicts when objects with the same name across multiple configuration files have differing attributes (IP, subnet, FQDN, comment, members, etc.).
 
-* **Intuitive Compare / Select Workflows**
-  * **Single Objects**: Select a source VDOM to adopt its definition; the engine generates `set`/`unset` commands to update all other target VDOMs.
-  * **Group Objects**: Choose **[Merge (Union)]** to combine all member tokens across all VDOMs, or **[Overwrite with Selected VDOM]** to enforce one VDOM's member list.
-  * **Custom Group Member Editing (+)**: In 'Overwrite with Selected VDOM' mode for group objects, clicking the `+` [Edit Members] button on the baseline VDOM card displays the full pool of members combined across all VDOMs (Merge union). Users can freely add or remove members via checkboxes with instant search filtering.
-  * **Recursive Group Closure**: Automatically detects nested group members and ensures every leaf object referenced by a group exists in target VDOMs, ordered safely from leaf objects to parent groups.
+* **Intuitive Property Sync Workflow**
+  * **Single Objects**: Select a baseline vDOM, and the tool generates CLI commands (`set`/`unset`) to apply that definition to all other target vDOMs.
+  * **Group Objects**: Supports **[Merge (Union)]** to combine all member tokens across all vDOMs, or **[Overwrite with Selected vDOM]** to enforce one vDOM's member list.
+  * **Custom Group Member Editing (+)**: In 'Overwrite with Selected vDOM' mode for group objects, clicking the `+` [Edit Members] button on the baseline vDOM card displays the full pool of members combined across all vDOMs (Merge union). Users can freely add or remove members via checkboxes with instant search filtering.
+  * **Recursive Group Dependency Resolution (Closure)**: Automatically ensures child member objects within a group exist in target vDOMs, guaranteeing a safe execution order from **child objects creation ➔ parent group creation**.
 
-* **Identical Definition Consolidation (IDENTICAL DEF)**
-  * **100% Identical Attribute Detection**: Automatically discovers duplicate objects that share identical functional parameters (IP/subnet, FQDN, port ranges, group members) but have different names (e.g., `HTTP` vs `WEB`, `HTTP_SRV` vs `WEB_SRV`).
-  * **Automatic Exclusion of Default Objects**: Standard FortiOS built-in system objects (`all`, `FTP_GET`, `FTP_PUT`, `EMS_ALL_UNKNOWN_CLIENTS`, `FCTEMS_ALL_FORTICLOUD_SERVERS`, etc.) are automatically excluded from duplicate clusters and comparison reports to eliminate noise.
-  * **Universal Cross-Table Reference Crawler**: Scans across all FortiOS configuration tables including firewall policies, proxy policies, Central NAT (`central-snat-map`), VIP/DNAT (`firewall vip`), local-in policies, DoS/interface ACLs, IPsec VPN Phase 2 selectors, SSL-VPN split-tunneling portals, Policy-Based Routing (PBR `router policy`), static routes, and address groups.
+* **Name Sync (Identical Definition Consolidation)**
+  * **100% Identical Attribute Detection**: Automatically discovers duplicate objects that share identical functional parameters (IP/subnet, FQDN, port ranges, group members) but have different names (e.g., `HTTP` vs `WEB`, `WAS_SRV` vs `WEB_APP`).
+  * **Universal Cross-Table Reference Crawler**: Scans across all FortiOS configuration tables including firewall policies (`firewall policy`, `proxy-policy`), Central NAT (`central-snat-map`), VIP/DNAT (`firewall vip`), local-in policies (`local-in-policy`), DoS policies and interface ACLs, IPsec VPN (Phase 2 selectors), SSL-VPN (split-tunneling portals), Policy-Based Routing (PBR `router policy`), static routes, and address groups.
   * **Safe Opt-in Workflow**: Defaults to **[Keep Existing (Do Not Unify)]** with zero CLI impact. When an administrator selects a standard target name, the engine replaces all references in-place across the entire configuration before cleanly deleting (`delete`) the deprecated duplicate object.
-  * **Single-VDOM Cleanup**: Supports finding and consolidating identical objects within a single firewall/VDOM configuration to clean up legacy duplication.
-  * **3 Dedicated HTML Reports**: Automatically generates up to 3 interactive HTML reports (`report_diff_property.html`, `report_diff_property_sync_ref.html`, `report_fgt_diff_identical_def.html`).
+  * **Single-vDOM Cleanup**: Supports finding and consolidating identical objects within a single firewall/vDOM configuration to clean up legacy duplication.
+  * **3 Dedicated HTML Reports**: Automatically generates up to 3 interactive HTML reports (`report_fgt_diff_identical_def.html`, etc.) to provide comprehensive visibility into object clusters and reference locations.
 
 * **Session Save & Resume (State Persistence)**
   * When handling hundreds or thousands of conflicting objects that cannot be completed in one sitting, click **`[SAVE SESSION]`** at any point to save your entire progress to a portable `.fgtsync` session file.
   * Resuming later or on another machine is as simple as opening the `.fgtsync` file directly from **`[Select Files...]`**: all original configuration snapshots and your selected baselines are 100% restored immediately without needing the original `.conf` files.
 
-* **4-Stage Precise Diff Visualizer**
-  * **Unchanged**: Matching attributes are displayed in clean standard text.
-  * **Modified**: Values that differ are highlighted in yellow with hover tooltips indicating target values.
-  * **Deleted**: Attributes and group members removed from the baseline definition are styled with strikethrough and a `-` prefix (`-attribute` / `-member`).
-  * **Added**: Newly added attributes and group members are styled with a `+` prefix (`+attribute` / `+member`).
-  * **Isolated Unselected State**: Before a decision is made, update and unchanged tags are cleanly hidden, allowing unbiased side-by-side comparison of original configurations.
+* **Precise 4-Stage Diff Visualization**
+  * **Keep (Identical)**: Attributes identical to baseline are displayed in regular text.
+  * **Modify (Changed)**: Differing attributes are highlighted in yellow (hovering displays a tooltip with the target value).
+  * **Delete (Removed)**: Attributes or members removed from baseline definition are displayed in red with a `-` prefix (`-Property` / `-Member`).
+  * **Add (New)**: Newly added attributes or members are displayed in green with a `+` prefix (`+Property` / `+Member`).
+  * **Unselected State Isolation**: Before a baseline is selected, modification/no-change tags are hidden to prevent unnecessary confusion and allow comparing raw attributes cleanly.
 
-* **High-Speed Search & ESC Shortcut Support**
-  * **Standard Search (Unquoted)**: Exact substring matching as typed (e.g., `web server`).
-  * **Multi-Word Search (Enclosed in `' '`)**: Wrap keywords in single quotes (e.g., `'web server'`) to find objects containing all keywords in any order (order-independent AND logic) with simultaneous highlighting.
-  * **ESC Shortcut**:
-    * **Single Press**: Immediately clears the search bar input. The selected object and its current visual position on screen remain preserved.
-    * **Rapid Double Press (< 450ms)**: Clears both the search bar input and all active Kind / Type dropdown filters. The selected object and its visual position remain preserved.
+* **High-Speed Condition Filtering & ESC Shortcut Support**
+  * **Standard Search (No quotes)**: Performs exact substring matching (e.g., searching `system web` finds objects containing that exact phrase).
+  * **Multi-Word Search (Single quotes `' '`)**: Enclosing search terms in single quotes (e.g., `'system web'`) searches with an AND condition regardless of word order (`[WAS]web-system-1`, `system_web`, `web_test_system`, etc.) and simultaneously highlights all matched words.
+  * **ESC Shortcut Support**:
+    * **Single Press**: Instantly clears the search input field. The currently selected object and its visual scroll position (top, middle, etc.) are strictly preserved.
+    * **Double Press (within 450ms)**: Clears both the search input and all dropdown filters (`Kind`, `Type`). The selection and visual scroll position are strictly preserved.
 
-* **CLI Preview & Search Navigation**
-  * Real-time search with match counter (`1 / N`), prev/next arrow buttons (`▲`/`▼`), and `Enter` / `Shift+Enter` sequential navigation with active match highlighting.
-  * One-click clipboard copy for full FortiOS CLI scripts.
+* **CLI Preview Search & Navigation**
+  * Same search syntax supported directly within the generated CLI preview.
+  * Match counter (`1 / N`), previous/next navigation buttons (`▲`/`▼`), and `Enter` / `Shift+Enter` sequential navigation.
 
-* **Dark Mode & Light Mode Support**
-  * Full support for Light themes (System/Soft Light) and Dark themes (Antigravity Dark/Cyber Dark) to suit user preferences.
+* **Dark & Light Mode Support**
+  * Supports light and dark themes to seamlessly adapt to user preferences.
 
-* **Adaptive UI Scaling**
-  * Flexible scaling presets (80% to 125%) and custom percentage input.
-  * Clean, unified button widths across all action controls.
+* **Resolution-Adaptive UI Scaling**
+  * Scaling presets (80% ~ 125%) as well as custom direct percentage input.
+  * Uniform width layout for all top-level action buttons.
 
 ---
 
@@ -65,64 +64,66 @@
 
 | Item | Recommended Specification |
 |---|---|
-| **Operating System** | **Windows 10 / Windows 11 (64-bit)** |
-| **Prerequisites** | **No runtime or library installation required** (Portable standalone executable provided) |
-| **Display** | 1280×860 or higher (High-DPI scaling fully supported) |
+| **OS** | **Windows 10 / Windows 11 (64-bit)** |
+| **Environment** | **No additional runtime or libraries required** (Standalone portable package) |
+| **Display** | 1280×860 or higher (High-DPI scaling supported) |
 
-> 💡 **Notice**: This application is distributed as a self-contained **Windows standalone executable (`.exe`)** requiring no Python installation or setup.
+> 💡 **Note**: This application is provided as a standalone executable (`.exe`) for Windows with no Python or third-party dependency installation required.
 
 ---
 
 ## 🚀 How to Run
 
-1. Extract the downloaded `fortigate_duplicate_diff_v1.5.zip` archive.
-2. Double-click **`fortigate_duplicate_diff.exe`** inside the folder to launch the program.
+1. Extract the downloaded `fortigate_duplicate_diff_v1.6.zip` file.
+2. Double-click **`fortigate_duplicate_diff.exe`** in the folder to launch.
 3. **Start New Analysis**:
-   * Click **[Select Files...]** and choose one or more FortiGate backup files (`.conf` or `.txt`) to analyze.
-   * Specify a **Save Directory** if needed (defaults to the first configuration file's directory).
-   * Click **[ANALYZE]** to begin comparison.
-4. **Resume Saved Session**:
-   * Select a `.fgtsync` session file directly in **[Select Files...]**.
-   * All object snapshots and your prior selections are immediately restored without needing the original config files.
+   * Click **[Select Files...]** to select one or more FortiGate backup configuration files (`.conf` or `.txt`).
+   * Specify a **Save Folder** path if needed (default: directory of the first selected file).
+   * Click **[ANALYZE]** to begin analysis.
+4. **Resume Previous Session**:
+   * Click **[Select Files...]** and select a previously saved `.fgtsync` session file.
+   * Your previous analysis data, selections, and group settings will be 100% restored immediately without needing the original `.conf` files.
 
 ---
 
-## 📖 User Guide
+## 📖 Detailed User Guide
 
-### 1. Configuration Analysis or Session Loading
+### 1. Configuration Analysis & Session Loading
 * **New Analysis**:
-  * **Config Files**: Select one or more FortiGate `.conf` or `.txt` configuration backups via **[Select Files...]**.
-    * Click the **`[ Collapse/Expand (▼/▶) ]`** chevron button to fold the card down to a single row (displaying compact file count and save path summary) to maximize vertical workspace.
-  * **Save Directory**: Choose a destination folder for generated CLI scripts and reports (defaults to the first config file's folder).
-  * **Options**: Toggle `Auto-open save folder` and `Save reports`.
-  * Click **`[ANALYZE]`** to scan VDOM structures and firewall objects across all files. Upon completion, the **`[ANALYZE]`** button automatically disables to prevent redundant runs, remaining disabled until new configuration file(s) are chosen via **`[Select Files...]`**.
+  * **Config Files**: Select FortiGate `.conf` or `.txt` files to analyze (`[Select Files...]`).
+    * Use the **`[ Collapse/Expand (▼/▶) ]`** button on the right to collapse the config panel to 1 line (displaying file count and output path summary) or expand it to maximize workspace area.
+  * **Save Folder**: Specify where CLI commands and reports will be saved (default: folder of the first file).
+  * **Options**: Check `Auto-open Result Folder` and `Save Reports` as desired.
+  * **Click [ANALYZE]**: Rapidly scans vDOM structures and firewall objects to identify conflicts and missing items. Once finished, the **`[ANALYZE]`** button is automatically disabled to prevent redundant re-runs until new files are selected via **`[Select Files...]`**.
   * **Smart Analysis Notices**:
-    * If only a single file with a single VDOM is selected, a popup alerts that no multi-source comparison conditions are met.
-    * If multiple files are analyzed but no duplicate objects exist or all duplicate objects have identical attributes, an informational popup notifies that no reconciliation is necessary.
-* **Load Existing Session**:
-  * Select a `.fgtsync` file from **`[Select Files...]`** to restore previous progress instantly.
+    * If comparison conditions are not met (such as a single file with a single vDOM), an informational modal is displayed.
+    * If all duplicate-named objects have 100% identical attributes and no differences or missing objects exist, an informational modal informs you immediately.
+* **Resume Session**:
+  * Selecting a `.fgtsync` file from **`[Select Files...]`** restores all object snapshots, selected radio buttons, and custom group edit modes immediately without requiring original config files.
 
-### 2. 'Property Sync' Tab (PROPERTY SYNC)
-* **Explore & Filter Objects**:
-  * Select an object tagged with orange `[Different Attributes]` or red `[Not Selected]` from the left panel.
-  * **Dropdown Filters**: Filter by Kind (All / Conflict / Missing) or Type (All / Address / Addrgrp / Service / Service Group).
-  * **Search & ESC Shortcuts**:
-    * Type in the search box for exact substring match, or wrap terms in quotes (`'word1 word2'`) for multi-word AND search.
-    * **Press `ESC` once**: Clears the search input while keeping the current selection and scroll position.
-    * **Press `ESC` twice quickly**: Resets all search and filter dropdowns while maintaining selection and scroll position.
-* **Resolve Conflicting Objects & Reset Selection**:
-  * **Single Objects (Address / Service)**: Review attribute diffs on the right panel and click the radio button of the desired baseline VDOM.
+### 2. 'Property Sync' Tab Guide
+* **Explore & Filter Object List**:
+  * Click an object in the left panel marked with an orange `[CONFLICT]` or red `[UNSELECTED]` tag.
+  * **Dropdown Filters**: Filter by kind (All / Conflict / Missing) and type (All / Address / Addrgrp / Service / Svcgrp).
+  * **Search**:
+    * Standard Search: Exact substring match.
+    * Multi-Word Search: Enclose keywords in single quotes (`'word1 word2'`) to match all words regardless of order.
+  * **ESC Shortcut**:
+    * **`ESC` once**: Instantly clears search input (preserving selection and scroll position).
+    * **`ESC` twice rapidly (within 450ms)**: Clears search input and all dropdown filters (preserving selection and scroll position).
+* **Select Baseline & Reset**:
+  * **Single Objects (Address / Service)**: Inspect attribute differences across vDOMs on the right panel, then select the radio button for the baseline vDOM.
   * **Group Objects (Addrgrp / Service Group)**:
-    * **`[Merge (Union)]`**: Combines member tokens across all VDOMs into a unified group definition.
-    * **`[Overwrite with Selected VDOM]`**: Select a source VDOM to enforce its exact member list across all target VDOMs.
-    * **Custom Member Editor (`+` button)**: Clicking the `+` button in the top-right corner of the baseline card opens a modal displaying all members aggregated across every VDOM for this group. Features instant keyword search, select/deselect all, and reset to baseline. Selected members are directly reflected in visual diffs, session files (`.fgtsync`), and generated CLI commands.
-  * **Reset Selection (🔄)**: Permanently located in the upper-right corner of the diff panel, remaining safely in a disabled state for non-conflict objects or prior to making a choice. Once a baseline selection (radio button, Merge, or Overwrite) is made, clicking the enabled **`[Reset Selection (🔄)]`** button clears the decision and immediately restores the object to the unselected (`[Not Selected]`) state.
+    * `[Merge (Union)]`: Synchronizes a unified group containing all members combined across all vDOMs.
+    * `[Overwrite with Selected vDOM]`: Enforces the selected vDOM's member list across all target vDOMs.
+    * **Custom Member Editing (`+` button)**: Clicking the `+` button opens the Member Pool modal combining all members across all vDOMs, with real-time search, select all/none, and reset. Custom edits are fully preserved in `.fgtsync` sessions and CLI output.
+  * **Reset Selection (🔄)**: Located at top right of the card. Disabled until a selection is made. Clicking **`[Reset (🔄)]`** clears the selection back to initial unselected state.
 * **Save Progress**:
   * Click **`[SAVE SESSION]`** at any time to save all decisions and current state to a portable `.fgtsync` file.
 
-### 3. 'Name Sync' Tab (NAME SYNC)
+### 3. 'Name Sync' Tab Guide (NAME SYNC)
 * **Explore & Filter Clusters**:
-  * Clusters of objects with identical attributes appear as cards on the left panel (e.g., `HTTP_SRV`, `WEB_SRV`).
+  * Clusters of objects with 100% identical attributes appear as cards on the left panel (e.g., `HTTP_SRV`, `WEB_SRV`).
   * Built-in FortiOS default objects (`all`, `FTP_GET`, `FTP_PUT`, `EMS_ALL_UNKNOWN_CLIENTS`, `FCTEMS_ALL_FORTICLOUD_SERVERS`, etc.) are automatically excluded from clustering to focus strictly on user-created objects.
   * Filter by type using the dropdown or search in real time for object names, IP addresses, or port numbers.
 * **Select Standard Target Name (Opt-in Workflow)**:
@@ -132,28 +133,28 @@
 * **Inspect Reference Breakdown**:
   * The bottom section displays a comprehensive breakdown table detailing everywhere each object is currently referenced (Location/Policy and Field).
 
-### 4. 'CLI Preview' Tab (CLI PREVIEW)
-* Switch between tabs corresponding to each firewall file to inspect the generated FortiOS CLI commands.
-* Consolidated CLI blocks are cleanly appended at the end of each VDOM block in strict dependency order (Groups ➔ VIP ➔ VPN ➔ Routing/PBR ➔ Policies/NAT/ACL ➔ Object Deletions).
-* **Search & Navigate**: Enter keywords to locate commands, navigating with `▲` / `▼` or `Enter` / `Shift+Enter`.
-* **Copy All**: Click the `Copy` button to copy the entire script to clipboard.
+### 4. 'CLI Preview' Tab Guide
+* Click the file tabs at the top to inspect real-time FortiOS CLI commands for each firewall unit.
+* Name consolidation decisions are automatically included in safe dependency order (Groups ➔ VIPs ➔ VPNs ➔ Routing ➔ Policy/NAT ➔ Delete deprecated objects).
+* **Search & Navigate**: Type keywords in the search bar and navigate matches using `▲`/`▼` or `Enter` / `Shift+Enter`.
+* **Copy All**: Click the `COPY` button at the top right to copy the entire script to clipboard.
 
-### 5. 'Property Diff', 'Property Sync Ref', and 'Name Diff' Tabs (HTML Reports)
-* **PROPERTY DIFF**: Interactive side-by-side comparison report displaying attribute discrepancies across all VDOMs.
-* **PROPERTY SYNC REF**: Group reference objects report identifying dependent objects that need to be created (`Object creation required`).
-* **NAME DIFF**: Identical definition report clustering objects that have duplicate configurations under different names.
-* **Open in Browser**: After running analysis, click `[Open in browser]` on any report tab to view the report full-screen in your default web browser.
+### 5. 'Property Diff', 'Property Sync Ref', 'Name Diff' Tabs (HTML Reports)
+* **Property Diff (PROPERTY DIFF)**: View an interactive HTML report comparing object attribute differences across vDOMs directly in the GUI.
+* **Property Sync Ref (PROPERTY SYNC REF)**: Review objects requiring creation in target vDOMs due to cross-references (`Object creation required`).
+* **Name Diff (NAME DIFF)**: View an interactive report analyzing clusters of identical objects and reference locations.
+* **Open in Browser**: Click `[Open in Browser]` on any report tab to view in full screen in your default browser.
 
-### 6. Generate CLI Scripts & 'Console' Tab
-* Once decisions are made, click **`[GENERATE CLI]`**.
-* Output CLI scripts (`report_diff_command_<conf_name>.txt`) and up to 3 HTML reports (Property Diff report, Property Sync Ref report, and Name Diff report) are created in the save directory.
-* Check the **`CONSOLE`** tab for real-time progress, parsing details, and execution logs.
-* Click **`[Open Save Folder]`** to open the destination folder directly in Windows Explorer.
+### 6. Generate CLI & 'Console' Verification
+* After completing selections in Property Sync and Name Sync, click **`[GENERATE CLI]`** at the top.
+* Synchronization CLI scripts (`report_diff_command_<filename>.txt`) and up to 3 interactive HTML reports are generated in the designated save directory.
+* Check the **`CONSOLE`** tab for execution completion logs and real-time output.
+* Click **`[Open Result Folder]`** to immediately open the output folder in File Explorer.
 
 ---
 
-## 🛡️ Safety & Reliability
+## 🛡️ Safety & Precautions
 
-* Generated CLI scripts exclusively perform safe object creations (`edit` / `set`) and explicit property unsets (`unset`).
-* No unrelated firewall policies, interfaces, or system configurations are touched or deleted.
-* Always review generated commands in the `CLI PREVIEW` tab before executing them in production environments.
+* CLI commands generated by this tool strictly perform **firewall object creation (`edit` / `set`) and cleanup of obsolete attributes (`unset`)**.
+* Firewall policies or unrelated configuration blocks are never deleted arbitrarily, ensuring safe deployment in production environments.
+* Administrators should always review generated CLI commands in the `CLI Preview` tab before applying them to physical firewall equipment.
